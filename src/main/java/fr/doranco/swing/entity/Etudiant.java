@@ -20,6 +20,18 @@ public class Etudiant {
 		this.section = section;
 	}
 
+	public void setAdresse(Adresse adresse) {
+		this.adresse = adresse;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public String getNom() {
 		return nom;
 	}

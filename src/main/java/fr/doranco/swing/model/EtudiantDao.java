@@ -2,6 +2,7 @@ package fr.doranco.swing.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
@@ -45,22 +46,52 @@ public class EtudiantDao implements IEtudiantDao {
 			throw new IllegalArgumentException("un ou plusieurs parametres sont manquants");
 		}
 		Connection conn = null;
+		PreparedStatement ps=null;
+		ResultSet rs=null;
 		
 		//pour ajouter un etudiant je dois ajouter tt d'abord une adresse
 		try {
 			conn = EcoleDataSource.getInstance().getConnexion();
 			String requete1="INSERT INTO `adresse` (`numero`, `rue`, `ville`, `cp`) VALUES (?, ?, ?, ?);";
-			PreparedStatement ps = conn.prepareStatement(requete1, Statement.RETURN_GENERATED_KEYS);
+			 ps = conn.prepareStatement(requete1, Statement.RETURN_GENERATED_KEYS);
 			ps.setString(1, adresse.getNumero());
 			ps.setString(2, adresse.getRue());
 			ps.setString(3, adresse.getVille());
 			ps.setString(4, adresse.getCp());
 			ps.executeUpdate();
+			rs = ps.getGeneratedKeys();
+			if (rs != null && rs.next()) {
+				adresse.setId(rs.getInt(1));
+				ps.close();
+				rs.close();
+				String requete2="INSERT INTO `swing_bd`.`etudiant` (`nom`, `prenom`, `specialite`, `section`, `Adresse_idAdresse`) VALUES (?, ?, ?, ?, ?);";
+				ps = conn.prepareStatement(requete2, Statement.RETURN_GENERATED_KEYS);
+				ps.setString(1, etudiant.getNom());
+				ps.setString(2, etudiant.getPrenom());
+				ps.setString(3, etudiant.getSpecialite());
+				ps.setString(4, etudiant.getSection());
+				ps.setInt(5, adresse.getId());
+				ps.executeUpdate();
+				rs = ps.getGeneratedKeys();
+				if (rs != null && rs.next()) {
+					etudiant.setId(rs.getInt(1));
+					etudiant.setAdresse(adresse);
+				}
+				
+			}
 			
 		} finally {
-			// TODO: handle finally clause
+			if (conn != null && !conn.isClosed()) {
+				conn.close();
+			}
+			if (rs != null && !rs.isClosed()) {
+				rs.close();
+			}
+			if (ps != null && !ps.isClosed()) {
+				ps.close();
+			}
 		}
-		return null;
+		return etudiant;
 	}
 
 }

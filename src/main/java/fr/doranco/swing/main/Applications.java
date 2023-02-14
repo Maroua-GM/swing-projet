@@ -12,6 +12,7 @@ public class Applications {
 				try {
 					FenetrePrincipale frame = new FenetrePrincipale();
 					frame.setVisible(true);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
